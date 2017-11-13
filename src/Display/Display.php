@@ -2,6 +2,7 @@
 
 namespace SleepingOwl\Admin\Display;
 
+use Illuminate\View\View;
 use SleepingOwl\Admin\Traits\Assets;
 use SleepingOwl\Admin\Traits\Renderable;
 use KodiComponents\Support\HtmlAttributes;
@@ -34,6 +35,7 @@ use SleepingOwl\Admin\Contracts\Display\Extension\FilterInterface;
  */
 abstract class Display implements DisplayInterface
 {
+
     use HtmlAttributes, Assets, Renderable;
 
     /**
@@ -96,7 +98,7 @@ abstract class Display implements DisplayInterface
     }
 
     /**
-     * @param string                    $name
+     * @param string $name
      * @param DisplayExtensionInterface $extension
      *
      * @return DisplayExtensionInterface
@@ -221,7 +223,7 @@ abstract class Display implements DisplayInterface
     public function toArray()
     {
         return [
-            'title' => $this->getTitle(),
+            'title'      => $this->getTitle(),
             'extensions' => $this->getExtensions()->toArray(),
             'attributes' => $this->htmlAttributesToString(),
         ];
@@ -234,19 +236,19 @@ abstract class Display implements DisplayInterface
      */
     public function render()
     {
+        /** @var View $view */
         $view = app('sleeping_owl.template')->view($this->getView(), $this->toArray());
 
         $blocks = $this->getExtensions()->placableBlocks();
 
         foreach ($blocks as $block => $data) {
-            foreach ($data as $html) {
-                if (! empty($html)) {
-                    $view->getFactory()->startSection($block);
-                    echo $html;
-                    $view->getFactory()->yieldSection();
-                } else {
-                    $view->getFactory()->flushSections();
-                }
+            $html = implode('', $data);
+            if (! empty($html)) {
+                $view->getFactory()->startSection($block);
+                echo $html;
+                $view->getFactory()->yieldSection();
+            } else {
+                $view->getFactory()->flushSections();
             }
         }
 
@@ -255,7 +257,7 @@ abstract class Display implements DisplayInterface
 
     /**
      * @param string $name
-     * @param array  $arguments
+     * @param array $arguments
      *
      * @return DisplayExtensionInterface
      */
